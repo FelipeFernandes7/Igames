@@ -4,6 +4,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Label } from "./components/label";
 import { Games } from "@/components/games";
+import { Metadata } from "next";
 
 interface IGameParamsProps {
   params: {
@@ -11,11 +12,51 @@ interface IGameParamsProps {
   };
 }
 
+export async function generateMetadata({
+  params,
+}: IGameParamsProps): Promise<Metadata> {
+  const apiUrl = `${process.env.NEXT_API_URL}/next-api/?api=game&id=${params.id}`;
+
+  try {
+    const response: GameProps = await fetch(apiUrl, {
+      next: { revalidate: 60 },
+    })
+      .then((res) => res.json())
+      .catch(() => {
+        return {
+          title: "IGames Descubra jogos incríveis",
+        };
+      });
+    return {
+      title: response.title,
+      description: `${response.description.slice(0, 100)}...`,
+      openGraph: {
+        title: response.title,
+        images: [response.image_url],
+      },
+      robots: {
+        index: true,
+        follow: true,
+        nocache: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          noimageindex: true,
+        },
+      },
+    };
+  } catch (err) {
+    return {
+      title: "IGames Descubra jogos incríveis",
+    };
+  }
+}
+
 async function getGameById(id: string) {
   const apiUrl = `${process.env.NEXT_API_URL}/next-api/?api=game&id=${id}`;
 
   try {
-    const response = await fetch(apiUrl, { cache: "no-store" });
+    const response = await fetch(apiUrl, { next: { revalidate: 60 } });
     return response.json();
   } catch (err) {
     console.error(err);
@@ -26,7 +67,7 @@ async function getGameById(id: string) {
 async function getGameSorted() {
   const apiUrl = `${process.env.NEXT_API_URL}/next-api/?api=game_day`;
   try {
-    const response = await fetch(apiUrl, { cache: "no-store" });
+    const response = await fetch(apiUrl, { next: { revalidate: 60 } });
     return response.json();
   } catch (error) {
     throw new Error("Failed to fetch data");

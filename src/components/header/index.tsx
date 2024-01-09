@@ -3,9 +3,6 @@ import Link from "next/link";
 import { LiaGamepadSolid } from "react-icons/lia";
 import { RiGameFill } from "react-icons/ri";
 
-const imageStyle = {
-  filter: "invert(1) sepia(100%) saturate(1000%) hue-rotate(220deg)",
-};
 export function Header() {
   return (
     <header className="w-full h-28 bg-[#232323] px-2">
